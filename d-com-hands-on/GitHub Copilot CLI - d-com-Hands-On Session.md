@@ -54,15 +54,15 @@ We will use the **Task Manager** application as our foundation. By the end of th
 
 ## Set up and authenticate with Copilot CLI
 
-1. Please ensure that you have logged in to [https://github.tools.sap](https://github.tools.sap) with your GitHub Enterprise license.
+1. Please ensure that you have an active **GitHub Copilot subscription** on your personal GitHub account ([github.com](https://github.com)).
 
-2. Clone the **Mega Hands-On Repository** and install dependencies.
+2. Clone the **Hands-On Repository** and install dependencies.
 
 ```bash
 # Clone the repository
-git clone https://github.tools.sap/GitHubCopilotConferenceBlr-Hands-On/GitHub-Copilot-Mega-Hands-On.git
+git clone https://github.com/hackathon-red-bat-72/SAP-d-com-2026-hands-on.git
 
-cd GitHub-Copilot-Mega-Hands-On
+cd SAP-d-com-2026-hands-on
 
 npm install
 ```
@@ -75,14 +75,30 @@ npm install -g @github/copilot
 
 # Launch Copilot CLI
 copilot
+```
 
-# Authenticate (inside the CLI)
+4. Authenticate with your **personal GitHub account**.
+
+When you launch Copilot CLI for the first time, you will be prompted to authenticate. Run the `/login` command inside the CLI:
+
+```
 /login
 ```
 
-> **Note:** Complete SAP SSO authentication when the browser opens. This is a one-time setup.
+   1. Select **GitHub.com** when asked which account to log into.
+   2. The CLI will display a **one-time code** and automatically copy it to your clipboard.
+   3. Your browser will open to [https://github.com/login/device](https://github.com/login/device) — if it doesn't, navigate there manually.
+   4. **Paste the one-time code** in the field on the page.
+   5. Review the requested permissions and click **Authorize GitHub Copilot CLI**.
+   6. Return to your terminal — you should see a success message:
 
-4. Explore the CLI and select your AI model.
+```
+Signed in successfully as <your-username>. You can now use Copilot.
+```
+
+> **Note:** This is a one-time setup. Copilot CLI stores your credentials securely in your system keychain and will remember your login for future sessions.
+
+5. Explore the CLI and select your AI model.
 
 | Prompt | Purpose |
 |--------|---------|
@@ -93,7 +109,7 @@ copilot
 
 ## Understand the existing codebase
 
-5. Before building new features, let the AI understand the existing project.
+6. Before building new features, let the AI understand the existing project.
 
 | Prompt | Purpose |
 |--------|---------|
@@ -104,13 +120,13 @@ copilot
 
 ## Plan the Team Collaboration feature
 
-6. Enter **Plan Mode** to architect the feature. Press `Shift+Tab` or type `/plan`.
+7. Enter **Plan Mode** to architect the feature. Press `Shift+Tab` or type `/plan`.
 
 | Prompt | Purpose |
 |--------|---------|
 | `I need to add a "Team Collaboration" feature to this Task Manager. Teams should be able to: (1) Create and manage teams, (2) Add/remove team members, (3) Assign tasks to team members, (4) View team dashboards with task statistics. Design the complete architecture - database models, API endpoints, and frontend components.` | Experience **Plan Mode's architectural thinking**. Watch as it asks clarifying questions and designs a comprehensive solution before writing any code. |
 
-7. When Plan Mode asks clarifying questions, provide these answers:
+8. When Plan Mode asks clarifying questions, provide these answers:
 
 - **Team size limit:** Maximum 50 members per team
 - **Role system:** Owner, Admin, Member roles
@@ -118,7 +134,7 @@ copilot
 - **Frontend framework:** Angular (or React based on your preference)
 - **Authentication:** Use existing user context (assume userId is available)
 
-8. Review the generated architecture plan.
+9. Review the generated architecture plan.
 
 | Prompt | Purpose |
 |--------|---------|
@@ -268,35 +284,15 @@ Discover how **MCP servers act as force multipliers** - connecting the CLI to ex
 cp mcp.json ~/.copilot/mcp-config.json
 ```
 
-> **Note:** This copies the pre-configured MCP server definitions (Context7, Playwright, Angular, Fiori/UI5) so that Copilot CLI can use them. The **GitHub MCP server is already built-in** to Copilot CLI and does not need to be included in this file. If you already have an existing `mcp-config.json`, merge the contents manually to avoid overwriting your current configuration.
+> **Note:** This copies the pre-configured MCP server definitions (Context7, Playwright, Angular, Fiori/UI5) so that Copilot CLI can use them. The **GitHub MCP server is already built-in** to Copilot CLI and uses your `/login` authentication — no additional setup is needed. If you already have an existing `mcp-config.json`, merge the contents manually to avoid overwriting your current configuration.
 
-2. Set up a **Personal Access Token (PAT)** for the GitHub MCP server.
-
-The GitHub MCP server comes **built-in** with Copilot CLI, but requires a PAT to authenticate with GitHub. Follow these steps to create one:
-
-   1. Login to [GitHub](https://github.com/settings/tokens/new).
-   2. Give it a **name** and set an **expiration**.
-   3. Select (at least) the following scopes:
-      - `read:packages`
-      - `repo`
-   4. Click **Generate token**.
-   5. **Copy the generated token** and save it securely - you won't be able to see it again.
-
-Set the environment variable before launching Copilot CLI:
-
-```bash
-export GITHUB_TOKEN=<your-pat-token>
-```
-
-> **Tip:** Add the export to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) so it persists across terminal sessions.
-
-3. Verify the configured MCP servers.
+2. Verify the configured MCP servers.
 
 ```
 /mcp
 ```
 
-4. Your project has these MCP servers available:
+3. Your project has these MCP servers available:
 
 | MCP Server | Capability |
 |------------|------------|
@@ -310,25 +306,25 @@ export GITHUB_TOKEN=<your-pat-token>
 
 ## Build Angular frontend with MCP
 
-5. Switch to a premium model for complex frontend generation.
+4. Switch to a premium model for complex frontend generation.
 
 ```
-/model opus
+/model claude-opus-4.6
 ```
 
-6. Use the Angular MCP to generate the frontend.
+5. Use the Angular MCP to generate the frontend.
 
 | Prompt | Purpose |
 |--------|---------|
 | `Using the Angular MCP server, create a Team Dashboard component for our Task Manager. It should display: (1) Team name and description header, (2) Member list with roles and avatars, (3) Task board showing tasks grouped by status (Pending, In Progress, Completed), (4) Statistics cards showing total tasks, completed tasks, overdue tasks. Use Angular Material components and follow SAP Fiori design principles.` | The **Angular MCP** provides current Angular patterns while generating a complete dashboard component with proper structure. |
 
-7. Generate team management components.
+6. Generate team management components.
 
 | Prompt | Purpose |
 |--------|---------|
 | `Using Angular MCP, create these additional components: (1) TeamListComponent - shows all teams the user belongs to, (2) CreateTeamDialogComponent - modal form to create new team, (3) ManageMembersDialogComponent - add/remove team members, (4) AssignTaskDialogComponent - assign a task to a team member. Include proper form validation and error handling.` | Build a **complete component library** for team collaboration. MCP ensures components follow Angular best practices. |
 
-8. Connect frontend to backend API.
+7. Connect frontend to backend API.
 
 | Prompt | Purpose |
 |--------|---------|
@@ -338,19 +334,19 @@ export GITHUB_TOKEN=<your-pat-token>
 
 ## Generate E2E tests with Playwright MCP
 
-9. Use Playwright MCP to generate comprehensive E2E tests.
+8. Use Playwright MCP to generate comprehensive E2E tests.
 
 | Prompt | Purpose |
 |--------|---------|
 | `Using Playwright MCP, generate end-to-end tests for the Team Collaboration feature. Test scenarios: (1) Create a new team, (2) Add a member to the team, (3) Assign a task to a team member, (4) View team dashboard and verify task statistics, (5) Remove a member from the team. Include proper assertions, test data setup, and cleanup.` | **Playwright MCP** generates production-ready E2E tests with proper page objects, assertions, and test isolation. |
 
-10. Generate API integration tests.
+9. Generate API integration tests.
 
 | Prompt | Purpose |
 |--------|---------|
 | `Using Playwright MCP, create API tests for the team endpoints. Test all CRUD operations, authorization checks (non-owner cannot delete team), and edge cases (cannot remove last owner). Use Playwright's API testing capabilities.` | Generate **API-level tests** that validate our backend independent of the UI. |
 
-11. Run the generated tests.
+10. Run the generated tests.
 
 | Prompt | Purpose |
 |--------|---------|
@@ -360,7 +356,7 @@ export GITHUB_TOKEN=<your-pat-token>
 
 ## Use Context7 for documentation
 
-12. Fetch current documentation to improve our code.
+11. Fetch current documentation to improve our code.
 
 | Prompt | Purpose |
 |--------|---------|
@@ -390,7 +386,7 @@ This session creates **custom agents** and uses them to document, review, and pr
 
 **Create custom agents for your workflow** (5 minutes)
 
-**Document the feature with GitHub MCP** (5 minutes)
+**Document the feature** (5 minutes)
 
 **Final review and deployment preparation** (5 minutes)
 
@@ -427,19 +423,19 @@ Learn to **extend the CLI's capabilities** by creating custom agents tailored to
 
 ---
 
-## Document the feature with GitHub MCP
+## Document the feature
 
-5. Create comprehensive documentation using GitHub MCP.
-
-| Prompt | Purpose |
-|--------|---------|
-| `Using GitHub MCP, create a new issue titled "Team Collaboration Feature - Documentation" with a complete feature description including: (1) Feature overview, (2) API endpoint documentation, (3) Database schema changes, (4) Frontend components, (5) Testing instructions. Label it as "documentation".` | Use **GitHub MCP** to create an issue with full documentation directly in the repository. |
-
-6. Create follow-up issues for future enhancements.
+5. Generate comprehensive API documentation.
 
 | Prompt | Purpose |
 |--------|---------|
-| `Using GitHub MCP, create three follow-up issues for Team Collaboration enhancements: (1) "Add team activity feed" - track all team actions, (2) "Add team notifications" - notify members of assignments, (3) "Add team analytics dashboard" - charts and metrics. Label them as "enhancement" and link them as related issues.` | Create a **roadmap of issues** for future development, directly in GitHub. |
+| `Generate a complete API documentation file for the Team Collaboration feature including: (1) Feature overview, (2) API endpoint documentation with request/response examples, (3) Database schema changes, (4) Frontend components, (5) Testing instructions. Save it as docs/team-collaboration-api.md.` | Let the CLI **generate structured documentation** as a markdown file in the project. |
+
+6. Generate a feature summary for the team.
+
+| Prompt | Purpose |
+|--------|---------|
+| `Generate a summary of the Team Collaboration feature we built today, including a list of future enhancements: (1) "Add team activity feed" - track all team actions, (2) "Add team notifications" - notify members of assignments, (3) "Add team analytics dashboard" - charts and metrics. Save it as docs/team-collaboration-roadmap.md.` | Create a **feature roadmap document** that can be shared with the team or used to create issues later. |
 
 ---
 
@@ -448,7 +444,7 @@ Learn to **extend the CLI's capabilities** by creating custom agents tailored to
 7. Switch to premium model for comprehensive review.
 
 ```
-/model opus
+/model gpt-5.3-codex
 ```
 
 8. Conduct final review.
@@ -475,7 +471,7 @@ Learn to **extend the CLI's capabilities** by creating custom agents tailored to
 | **Backend API** | 9 new endpoints for team CRUD, member management, task assignment |
 | **Frontend** | TeamDashboard, TeamList, CreateTeamDialog, ManageMembersDialog, AssignTaskDialog components |
 | **Tests** | E2E tests for team workflows, API integration tests |
-| **Documentation** | GitHub issues with feature docs and enhancement roadmap |
+| **Documentation** | API docs and feature roadmap generated as project files |
 | **Custom Agents** | team-feature-expert, security-reviewer agents |
 
 ---
@@ -486,7 +482,7 @@ Learn to **extend the CLI's capabilities** by creating custom agents tailored to
 |---------|------------------|
 | **Custom Agents** | Create `.github/agents/*.md` for specialized assistants |
 | **@agent-name** | Invoke agents for domain-specific tasks |
-| **GitHub MCP** | Create issues and documentation directly from CLI |
+| **Auto-generated Docs** | Generate structured documentation files from the CLI |
 | **Premium Models** | Use Opus for comprehensive reviews and complex tasks |
 | **End-to-End** | Built complete feature: backend, frontend, tests, docs |
 
@@ -517,8 +513,7 @@ Learn to **extend the CLI's capabilities** by creating custom agents tailored to
 ├─────────────────────────────────────────────────────────────────┤
 │  SESSION 4: DEVOPS & SHIPPING                                    │
 │  ├── Custom agents (team-feature-expert, security-reviewer)      │
-│  ├── GitHub issues for documentation                             │
-│  ├── Enhancement roadmap                                         │
+│  ├── API documentation and feature roadmap                       │
 │  └── Deployment checklist                                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
