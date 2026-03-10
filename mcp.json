@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@0.0.68"]
+    },
+    "fiori": {
+      "command": "npx",
+      "args": ["@sap-ux/fiori-mcp-server@0.2.3"]
+    },
+    "io.github.angular/angular-cli": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["@angular/cli@21.2.0","mcp"],
+        "gallery": "https://api.hyperspace.tools.sap/mcp-registry/github",
+        "version": "21.2.0"
+      },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}
