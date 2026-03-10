@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Issues Kanban Board - Task Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .kanban-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .kanban-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .kanban-column:hover {
+            transform: translateY(-5px);
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .column-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .task-count {
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .task-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .github-task {
+            border-left: 4px solid #24292e;
+        }
+
+        .local-task {
+            border-left: 4px solid #28a745;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .task-priority {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .priority-high {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .priority-medium {
+            background: #feebc8;
+            color: #dd6b20;
+        }
+
+        .priority-low {
+            background: #c6f6d5;
+            color: #38a169;
+        }
+
+        .task-description {
+            color: #718096;
+            font-size: 0.9rem;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #a0aec0;
+        }
+
+        .github-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .github-badge {
+            background: #24292e;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        .repo-badge {
+            background: #f7fafc;
+            color: #2d3748;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.7rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn-github {
+            background: #24292e;
+            border-color: #24292e;
+            color: white;
+        }
+
+        .btn-github:hover {
+            background: #1a1e23;
+            border-color: #1a1e23;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: #a0aec0;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .health-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .health-healthy { background: #38a169; }
+        .health-unhealthy { background: #e53e3e; }
+        .health-unknown { background: #a0aec0; }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="kanban-container">
+        <div class="kanban-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="mb-0">
+                    <i class="fab fa-github me-2"></i>
+                    GitHub Issues Kanban Board
+                </h1>
+                <div class="health-indicator" id="healthIndicator">
+                    <div class="health-dot health-unknown"></div>
+                    <span>Checking...</span>
+                </div>
+            </div>
+            
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated here -->
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-github" onclick="syncGitHubIssues()">
+                    <i class="fas fa-sync-alt me-2"></i>Sync GitHub Issues
+                </button>
+                <button class="btn btn-primary" onclick="loadKanbanBoard()">
+                    <i class="fas fa-reload me-2"></i>Refresh Board
+                </button>
+                <select class="form-select" id="githubFilter" style="width: auto;" onchange="loadKanbanBoard()">
+                    <option value="assigned">Assigned to Me</option>
+                    <option value="created">Created by Me</option>
+                    <option value="mentioned">Mentioning Me</option>
+                    <option value="all">All Involving Me</option>
+                </select>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="includeLocal" checked onchange="loadKanbanBoard()">
+                    <label class="form-check-label" for="includeLocal">
+                        Include Local Tasks
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="kanban-board" id="kanbanBoard">
+            <!-- Kanban columns will be populated here -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:3000/api/v1';
+        let draggedTask = null;
+        let currentStats = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            checkGitHubHealth();
+            loadKanbanBoard();
+            
+            // Refresh every 30 seconds
+            setInterval(() => {
+                checkGitHubHealth();
+                loadKanbanBoard();
+            }, 30000);
+        });
+
+        // Check GitHub MCP connection health
+        async function checkGitHubHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/github/health`);
+                const result = await response.json();
+                
+                const indicator = document.getElementById('healthIndicator');
+                const dot = indicator.querySelector('.health-dot');
+                const text = indicator.querySelector('span');
+                
+                if (result.success && result.data.connected) {
+                    dot.className = 'health-dot health-healthy';
+                    text.textContent = 'GitHub Connected';
+                } else {
+                    dot.className = 'health-dot health-unhealthy';
+                    text.textContent = 'GitHub Disconnected';
+                }
+            } catch (error) {
+                const indicator = document.getElementById('healthIndicator');
+                const dot = indicator.querySelector('.health-dot');
+                const text = indicator.querySelector('span');
+                
+                dot.className = 'health-dot health-unhealthy';
+                text.textContent = 'Connection Error';
+                console.error('Health check failed:', error);
+            }
+        }
+
+        // Sync GitHub issues
+        async function syncGitHubIssues() {
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Syncing...';
+            button.disabled = true;
+
+            try {
+                const filter = document.getElementById('githubFilter').value;
+                const response = await fetch(`${API_BASE}/github/sync?filter=${filter}&autoSave=true`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(`Synced ${result.data.summary.total} GitHub issues`, 'success');
+                    loadKanbanBoard();
+                } else {
+                    showNotification('Failed to sync GitHub issues', 'error');
+                }
+            } catch (error) {
+                console.error('Sync failed:', error);
+                showNotification('Error syncing GitHub issues', 'error');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Load Kanban board
+        async function loadKanbanBoard() {
+            const board = document.getElementById('kanbanBoard');
+            board.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin me-2"></i>Loading tasks...</div>';
+
+            try {
+                const includeLocal = document.getElementById('includeLocal').checked;
+                const githubFilter = document.getElementById('githubFilter').value;
+                
+                const response = await fetch(`${API_BASE}/github/kanban?includeLocal=${includeLocal}&githubFilter=${githubFilter}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentStats = result.data.statistics;
+                    updateStats(result.data.statistics);
+                    renderKanbanBoard(result.data.board);
+                } else {
+                    board.innerHTML = '<div class="alert alert-danger">Failed to load tasks</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load kanban board:', error);
+                board.innerHTML = '<div class="alert alert-danger">Error loading tasks</div>';
+            }
+        }
+
+        // Update statistics display
+        function updateStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total_tasks}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.github_issues}</div>
+                    <div class="stat-label">GitHub Issues</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.local_tasks}</div>
+                    <div class="stat-label">Local Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.by_priority.high}</div>
+                    <div class="stat-label">High Priority</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.by_status.pending}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.by_status.in_progress}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            `;
+        }
+
+        // Render Kanban board
+        function renderKanbanBoard(board) {
+            const boardElement = document.getElementById('kanbanBoard');
+            
+            const columns = [
+                { key: 'pending', title: 'Pending', tasks: board.pending || [] },
+                { key: 'in-progress', title: 'In Progress', tasks: board['in-progress'] || [] },
+                { key: 'completed', title: 'Completed', tasks: board.completed || [] }
+            ];
+
+            boardElement.innerHTML = columns.map(column => `
+                <div class="kanban-column" data-status="${column.key}">
+                    <div class="column-header">
+                        <div class="column-title">${column.title}</div>
+                        <div class="task-count">${column.tasks.length}</div>
+                    </div>
+                    <div class="tasks-container" ondragover="allowDrop(event)" ondrop="dropTask(event)">
+                        ${column.tasks.map(task => renderTaskCard(task)).join('')}
+                        ${column.tasks.length === 0 ? '<div class="drop-zone">Drop tasks here</div>' : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners for drag and drop
+            addDragListeners();
+        }
+
+        // Render individual task card
+        function renderTaskCard(task) {
+            const isGitHub = task.isGitHubIssue || task.source === 'github';
+            const priorityClass = `priority-${task.priority.toLowerCase()}`;
+            
+            return `
+                <div class="task-card ${isGitHub ? 'github-task' : 'local-task'}" 
+                     draggable="true" 
+                     data-task-id="${task._id || task.id}"
+                     data-github-issue="${isGitHub}"
+                     ondragstart="dragStart(event)">
+                    <div class="task-header">
+                        <h6 class="task-title">${task.title}</h6>
+                        <span class="task-priority ${priorityClass}">${task.priority}</span>
+                    </div>
+                    ${task.description ? `<div class="task-description">${truncateText(task.description, 100)}</div>` : ''}
+                    <div class="task-meta">
+                        <div class="github-info">
+                            ${isGitHub ? `
+                                <span class="github-badge">
+                                    <i class="fab fa-github me-1"></i>#${task.githubNumber}
+                                </span>
+                                <span class="repo-badge">${task.githubRepository}</span>
+                            ` : `
+                                <span class="repo-badge">Local Task</span>
+                            `}
+                        </div>
+                        ${task.dueDate ? `<small>${formatDate(task.dueDate)}</small>` : ''}
+                    </div>
+                    ${isGitHub && task.githubUrl ? `
+                        <div class="mt-2">
+                            <a href="${task.githubUrl}" target="_blank" class="btn btn-sm btn-outline-dark">
+                                <i class="fab fa-github me-1"></i>View on GitHub
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Drag and drop functionality
+        function addDragListeners() {
+            const taskCards = document.querySelectorAll('.task-card');
+            taskCards.forEach(card => {
+                card.addEventListener('dragstart', dragStart);
+                card.addEventListener('dragend', dragEnd);
+            });
+        }
+
+        function dragStart(event) {
+            draggedTask = {
+                id: event.target.dataset.taskId,
+                isGitHubIssue: event.target.dataset.githubIssue === 'true'
+            };
+            event.target.classList.add('dragging');
+        }
+
+        function dragEnd(event) {
+            event.target.classList.remove('dragging');
+            draggedTask = null;
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function dropTask(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            
+            if (!draggedTask) return;
+
+            const column = event.currentTarget.closest('.kanban-column');
+            const newStatus = column.dataset.status;
+            
+            // Map column status to task status
+            const statusMap = {
+                'pending': 'Pending',
+                'in-progress': 'In Progress',
+                'completed': 'Completed'
+            };
+
+            updateTaskStatus(draggedTask.id, statusMap[newStatus]);
+        }
+
+        // Update task status
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                const response = await fetch(`${API_BASE}/github/tasks/${taskId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Task updated to ${newStatus}`, 'success');
+                    loadKanbanBoard(); // Refresh the board
+                } else {
+                    showNotification('Failed to update task', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to update task:', error);
+                showNotification('Error updating task', 'error');
+            }
+        }
+
+        // Utility functions
+        function truncateText(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create a simple toast notification
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // Remove drag-over class when dragging leaves the area
+        document.addEventListener('dragleave', function(event) {
+            if (event.target.classList.contains('tasks-container')) {
+                event.target.classList.remove('drag-over');
+            }
+        });
+    </script>
+</body>
+</html>
